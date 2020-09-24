@@ -1,5 +1,8 @@
 import cv2
 
+SUPPORT_VECTOR_MACHINE = 'svm'
+DECISION_TREE = 'decision_tree'
+
 
 # Da como resultado el contorno con el area maxima dada una lista de contornos.
 def get_greatest_contour(contours):
@@ -42,3 +45,26 @@ def get_hu_moments(contour):
 # Filtra los contornos que sean mayores a un max_area o menores a un min_area
 def filter_contours(contours, min_area, max_area):
     return list(filter(lambda contour: min_area < cv2.contourArea(contour) < max_area, contours))
+
+
+# Crea un clasificador dependiendo del tipo que se le pasa como argumento
+def create_classifier(classifier_name):
+    if classifier_name == SUPPORT_VECTOR_MACHINE:
+        classifier = cv2.ml.SVM_create()
+        classifier.setKernel(cv2.ml.SVM_RBF)
+        return classifier
+    elif classifier_name == DECISION_TREE:
+        classifier = cv2.ml.DTrees_create()
+        classifier.setCVFolds(1)
+        classifier.setMaxDepth(10)
+        return classifier
+
+
+# Se crea un clasificador con el modelo pre entrenado
+def load_model(classifier_name, model_path):
+    if classifier_name == SUPPORT_VECTOR_MACHINE:
+        classifier = cv2.ml.SVM_load(model_path)
+        return classifier
+    elif classifier_name == DECISION_TREE:
+        classifier = cv2.ml.DTrees_load(model_path)
+        return classifier

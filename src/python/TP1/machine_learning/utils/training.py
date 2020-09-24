@@ -1,6 +1,8 @@
 import cv2
 import csv
 import numpy as np
+
+from TP1.common.common_utils import SUPPORT_VECTOR_MACHINE, DECISION_TREE, create_classifier
 from TP1.machine_learning.utils.dataset import label_to_int
 
 
@@ -19,26 +21,19 @@ def load_dataset():
     return features, labels
 
 
-def train():
+def train(classifier_name):
     features, labels = load_dataset()
 
     # decision tree
-    classifier = cv2.ml.DTrees_create()
-    classifier.setCVFolds(1)
-    classifier.setMaxDepth(10)
+    classifier = create_classifier(classifier_name)
     classifier.train(features, cv2.ml.ROW_SAMPLE, labels)
-    classifier.save('tree_shapes_model.yaml')
-
-    # svm
-    # classifier = cv2.ml.SVM_create()
-    # classifier.setKernel(cv2.ml.SVM_RBF)
-    # classifier.train(features, cv2.ml.ROW_SAMPLE, labels)
-    # classifier.save('svm_data.dat')
+    classifier.save('../models/{}.yaml'.format(classifier_name))
 
     return
 
 
 if __name__ == '__main__':
-    train()
+    train(SUPPORT_VECTOR_MACHINE)
+    # train(DECISION_TREE)
 
 
