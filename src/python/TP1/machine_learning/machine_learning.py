@@ -3,7 +3,7 @@ import math
 import cv2
 import numpy as np
 
-from TP1.common.common_utils import filter_contours, load_model, SUPPORT_VECTOR_MACHINE, DECISION_TREE
+from TP1.common.common_utils import filter_contours, load_model, SUPPORT_VECTOR_MACHINE, DECISION_TREE, NAIVE_BAYES
 from TP1.machine_learning.utils.dataset import int_to_label
 from TP1.open_cv.tp1 import get_greatest_contour
 
@@ -33,7 +33,9 @@ if __name__ == '__main__':
     cv2.createTrackbar(trackbar_name4, window_name, 1, slider_max4, on_trackbar_change)
 
     # classifier = load_model(SUPPORT_VECTOR_MACHINE, './models/svm.yaml')
-    classifier = load_model(DECISION_TREE, './models/decision_tree.yaml')
+    # classifier = load_model(DECISION_TREE, './models/decision_tree.yaml')
+    classifier = load_model(NAIVE_BAYES, './models/naive_bayes.yaml')
+
     trackbar = cv2.createTrackbar(trackbar_name, window_name, 50, 150, on_trackbar_change)
     while True:
         _, frame = cap.read()

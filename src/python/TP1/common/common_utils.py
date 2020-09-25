@@ -2,6 +2,7 @@ import cv2
 
 SUPPORT_VECTOR_MACHINE = 'svm'
 DECISION_TREE = 'decision_tree'
+NAIVE_BAYES = 'naive_bayes'
 
 
 # Da como resultado el contorno con el area maxima dada una lista de contornos.
@@ -58,6 +59,9 @@ def create_classifier(classifier_name):
         classifier.setCVFolds(1)
         classifier.setMaxDepth(10)
         return classifier
+    elif classifier_name == NAIVE_BAYES:
+        classifier = cv2.ml.NormalBayesClassifier_create()
+        return classifier
 
 
 # Se crea un clasificador con el modelo pre entrenado
@@ -67,4 +71,7 @@ def load_model(classifier_name, model_path):
         return classifier
     elif classifier_name == DECISION_TREE:
         classifier = cv2.ml.DTrees_load(model_path)
+        return classifier
+    elif classifier_name == NAIVE_BAYES:
+        classifier = cv2.ml.NormalBayesClassifier_load(model_path)
         return classifier

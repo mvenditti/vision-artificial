@@ -2,7 +2,7 @@ import cv2
 import csv
 import numpy as np
 
-from TP1.common.common_utils import SUPPORT_VECTOR_MACHINE, DECISION_TREE, create_classifier
+from TP1.common.common_utils import SUPPORT_VECTOR_MACHINE, DECISION_TREE, create_classifier, NAIVE_BAYES
 from TP1.machine_learning.utils.dataset import label_to_int
 
 
@@ -33,7 +33,8 @@ def train(classifier_name):
 
 
 if __name__ == '__main__':
-    train(SUPPORT_VECTOR_MACHINE)
+    # train(SUPPORT_VECTOR_MACHINE)
+    train(NAIVE_BAYES)
     # train(DECISION_TREE)
 
 
