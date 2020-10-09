@@ -4,9 +4,9 @@ import math
 # from drawing_utils import mosaic_view
 from src.python.TP2.Vehicle import Vehicle
 
-video_path = 'carsRt9_3.avi'
+video_path = 'race.mp4'
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-background_subs = cv2.createBackgroundSubtractorMOG2(detectShadows=False, history=500, varThreshold=16)
+background_subs = cv2.createBackgroundSubtractorMOG2(detectShadows=False, history=500, varThreshold=25)
 
 cap = cv2.VideoCapture(video_path)
 
@@ -30,9 +30,10 @@ while (cap.isOpened):
     def valid_countor(c):
         # boundingRect es para dibujar un rectangulo aprox al rededor de la img binaria
         (x, y, width, h) = cv2.boundingRect(c)
-        return (cv2.contourArea(c) > 500 and width < 150)
+        return (cv2.contourArea(c) > 700 and width < 100)
 
     filtered_contours = list(filter(valid_countor, contours))
+    # filtered_contours = contours
 
     for contour in filtered_contours:
         # get bounding box from countour
@@ -40,9 +41,9 @@ while (cap.isOpened):
         # draw bounding box
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
+    cv2.imshow('detected_motion', detected_motion)
     cv2.imshow('tp2', frame)
-    # cv2.imshow('detected_motion', detected_motion)
-    if cv2.waitKey(20) & 0xFF == ord("q"):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 cap.release()
