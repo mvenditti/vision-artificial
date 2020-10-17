@@ -4,7 +4,7 @@ import math
 # from drawing_utils import mosaic_view
 from src.python.TP2.Vehicle import Vehicle
 
-video_path = 'race.mp4'
+video_path = 'traffic.mp4'
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 background_subs = cv2.createBackgroundSubtractorMOG2(detectShadows=False, history=500, varThreshold=25)
 
