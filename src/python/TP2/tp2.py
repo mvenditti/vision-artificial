@@ -1,5 +1,5 @@
 import cv2
-import math
+import argparse
 
 
 def tp2():
@@ -11,7 +11,17 @@ def tp2():
     # definimos para saber cada cuanto medir la distancia
     frame_counter = 0
 
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-v", "--video", type=str,
+                    default="/Users/fabriziodisanto/sandbox/opencvtutorial/static/videos/race.mp4",
+                    help="path to input video file")
+    ap.add_argument("-t", "--tracker", type=str, default="kcf",
+                    help="OpenCV object tracker type")
+    args = vars(ap.parse_args())
+
     trackers = cv2.MultiTracker_create()
+
+    print(trackers)
 
     video_path = 'traffic.mp4'
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -48,16 +58,18 @@ def tp2():
         for contour in filtered_contours:
             # get bounding box from countour
             (x, y, w, h) = cv2.boundingRect(contour)
+            ROI = x, y, w, h
             # draw bounding box
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
             moments = cv2.moments(contour)
             centre_x = moments["m10"]/moments["m00"]
             centre_y = moments["m01"]/moments["m00"]
-            #
-            # if ( frame_counter % 2 == 0 ):
-            #     speed = calculateSpeed(centre_x, centre_y, )
-            # else:
+
+            if ( frame_counter % 2 == 0 ):
+                trackers.add(cv2.TrackerKCF_create(), frame, ROI)
+                print(trackers)
+                # speed = calculateSpeed(centre_x, centre_y, )
 
 
         cv2.imshow('detected_motion', detected_motion)
