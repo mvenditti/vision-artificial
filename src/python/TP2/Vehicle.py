@@ -37,8 +37,9 @@ def generate_random_color():
 # Devuelve el vehiculo mas cercano al pasado como argumento cumpliendo
 # con la condición de encontrarse en un radio máximo
 # En caso de que ningun vehiculo cumpla los requisitos, o que la lista de vehiculos este vacia, se devuelve None
+# todo no devolveria none porque falla
 def nearest_vehicle_in_range(vehicle, vehicles, max_distance):
-    nearest = None
+    nearest = vehicle
     if not vehicles:
         return nearest
 
