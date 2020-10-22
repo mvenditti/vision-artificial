@@ -91,7 +91,7 @@ def tp2():
                 nearest_car = nearest_vehicle_in_range(car, car_list, 30)
                 distance = calculate_distance(car.x, car.y, nearest_car.x, nearest_car.y)
 
-                if 20 > distance > 0 and not contour_has_matched and not car.updated:  # es cercano y los considero igual
+                if 30 > distance > 0 and not contour_has_matched and not car.updated:  # es cercano y los considero igual
                     contour_has_matched = True
                     car.updated = True
                     car.x = centre_x
@@ -116,7 +116,13 @@ def tp2():
 
             draw_contour(contour, frame, speed)
 
-        # car_list = list(filter(lambda c: c.inactive_counter < 5, car_list))
+        for car in car_list:
+            if not car.updated:
+                car.inactive_counter = car.inactive_counter + 1
+            else:
+                car.inactive_counter = 0
+
+        car_list = list(filter(lambda c: c.inactive_counter < 5, car_list))
 
         cv2.imshow('detected_motion', detected_motion)
         cv2.imshow('tp2', frame)
