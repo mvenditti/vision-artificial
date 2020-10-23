@@ -12,7 +12,7 @@ seconds_x_frame = 0.4
 frame_frequency = 10
 
 # distancia maxima a recorrer a partir de dicho punto se remueven autos.
-max_y_distance = 100
+max_y_distance = 500
 
 
 def get_center(contour):
@@ -34,17 +34,15 @@ def calculate_distance(x1, y1, x2, y2):
 
 def calculate_speed(car):
     global frame_frequency
-    x, y = get_center(car.contour)
-    hist_x, hist_y = get_center(car.hist_contour)
-    distance = calculate_distance(x, y, hist_x, hist_y)
+    distance = calculate_distance(car.x, car.y, car.hist_x, car.hist_y)
     distance_meter = distance * meter_x_pixel
     meter_per_second = distance_meter / (seconds_x_frame * frame_frequency)
     return int(meter_per_second * 3.6)
 
 
-def draw_car(car, frame):
+def draw_contour(contour, frame, car):
     # get bounding box from countour
-    (x, y, w, h) = cv2.boundingRect(car.contour)
+    (x, y, w, h) = cv2.boundingRect(contour)
     ROI = x, y, w, h
     # draw bounding box
     cv2.rectangle(frame, (x, y), (x + w, y + h), car.color, 2)
@@ -91,24 +89,26 @@ def tp2():
         filtered_contours = list(filter(valid_countor, contours))
 
         for contour in filtered_contours:
-            car_list.append(Vehicle(contour, 0))
+            center_x, center_y = get_center(contour)
+            car_list.append(Vehicle(center_x, center_y, 0))
             for car in car_list:
-                x, y = get_center(car.get_contour())
-                if y > max_y_distance:
+                if car.y > max_y_distance:
                     car.remove = True
                 else:
                     nearest = nearest_vehicle_in_range(car, car_list, 30)
                     if nearest is None:
                         car.remove = True
                     else:
-                        car.contour = nearest.contour
-                        draw_car(car.contour, frame)
+                        car.x = nearest.x
+                        car.y = nearest.y
+                        draw_contour(contour, frame, car)
 
                         if frame_update(frame_counter):
-                            if car.hist_contour is not None:
+                            if car.hist_x is not 0 and car.hist_y is not 0:
                                 car.speed = calculate_speed(car)
 
-                            car.hist_contour = nearest.contour
+                            car.hist_x = nearest.x
+                            car.hist_y = nearest.y
 
         car_list = list(filter(lambda c: c.remove is True, car_list))
         cv2.imshow('detected_motion', detected_motion)
