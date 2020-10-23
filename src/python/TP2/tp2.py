@@ -8,6 +8,17 @@ meter_x_pixel = 0.026
 # cantidad de segundos equivalentes a un frame
 seconds_x_frame = 0.4
 
+# cada cuantos frames realizo una accion.
+frame_frequency = 10
+
+# distancia maxima a recorrer a partir de dicho punto se remueven autos.
+max_y_distance = 100
+
+
+def frame_update(frame_counter):
+    global frame_frequency
+    return frame_counter % frame_frequency == 0
+
 
 def contour_to_img(img, contour):
     (x, y, w, h) = cv2.boundingRect(contour)
@@ -21,26 +32,28 @@ def calculate_distance(x1, y1, x2, y2):
 
 
 def calculate_speed(car, center_x, center_y):
+    global frame_frequency
     distance = calculate_distance(center_x, center_y, car.hist_x, car.hist_y)
     distance_meter = distance * meter_x_pixel
-    meter_per_second = distance_meter / seconds_x_frame
+    meter_per_second = distance_meter / (seconds_x_frame * frame_frequency)
     return int(meter_per_second * 3.6)
 
 
-def draw_contour(contour, frame, speed):
+def draw_contour(contour, frame, speed, color):
     # get bounding box from countour
     (x, y, w, h) = cv2.boundingRect(contour)
     ROI = x, y, w, h
     # draw bounding box
-    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+    cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
     cv2.putText(frame, str(speed) + " km/h", (x, y - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
 
 
 def tp2():
+    global max_y_distance
+
     # definimos para saber cada cuanto medir la distancia
     frame_counter = 0
     car_list = []
-    check_speed = False
 
     video_path = 'traffic.mp4'
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -51,6 +64,7 @@ def tp2():
     while (cap.isOpened):
         ret, frame = cap.read()
         clean_frame = frame.copy()
+        cv2.line(frame, (0, max_y_distance), (10000, max_y_distance), (0, 0, 255), 3)
         frame_counter = frame_counter + 1
 
         # OPERACIONES MORFOLOGICAS
@@ -69,60 +83,41 @@ def tp2():
         def valid_countor(c):
             # boundingRect es para dibujar un rectangulo aprox al rededor de la img binaria
             (x, y, width, h) = cv2.boundingRect(c)
-            return (cv2.contourArea(c) > 250 and width < 150)
+            return cv2.contourArea(c) > 250 and width < 150
 
         filtered_contours = list(filter(valid_countor, contours))
-
-        if frame_counter == 5:
-            check_speed = True
-            frame_counter = 0
-
-        for car in car_list:
-            car.updated = False
 
         for contour in filtered_contours:
             moments = cv2.moments(contour)
             centre_x = moments["m10"] / moments["m00"]
             centre_y = moments["m01"] / moments["m00"]
 
-            speed = 0
-            contour_has_matched = False
             for car in car_list:
-                nearest_car = nearest_vehicle_in_range(car, car_list, 30)
-                distance = calculate_distance(car.x, car.y, nearest_car.x, nearest_car.y)
+                (x, y, w, h) = cv2.boundingRect(car.contour)
+                if y > max_y_distance:
+                    car.remove = True
+                else:
+                    car_list.append(Vehicle(contour, 0))
+                    draw_contour(car.contour, frame, car.speed, car.color)
 
-                if 30 > distance > 0 and not contour_has_matched and not car.updated:  # es cercano y los considero igual
-                    contour_has_matched = True
-                    car.updated = True
-                    car.x = centre_x
-                    car.y = centre_y
+                car = nearest_vehicle_in_range(car, car_list, 30)
 
-                    # con 2 quedaba tan seguido que ponia lento el video
-                    if check_speed:
-                        if car.hist_x != 0 and car.hist_y != 0:
-                            speed = calculate_speed(car, centre_x, centre_y)
-                            car.speed = speed
-                            car_img = contour_to_img(clean_frame, contour)
-                            height, width, channels = car_img.shape
-                            if width > 55 and height < 70:
-                                car.img = car_img
-                        car.hist_x = centre_x
-                        car.hist_y = centre_y
-                    else:
-                        speed = car.speed
+                # con 2 quedaba tan seguido que ponia lento el video
+                if frame_update(frame_counter):
+                    if car.hist_x != 0 and car.hist_y != 0:
+                        speed = calculate_speed(car, centre_x, centre_y)
+                        car.speed = speed
+                        car_img = contour_to_img(clean_frame, contour)
+                        height, width, channels = car_img.shape
+                        if width > 55 and height < 70:
+                            car.img = car_img
+                    car.hist_x = centre_x
+                    car.hist_y = centre_y
+                else:
+                    speed = car.speed
 
-            if not contour_has_matched:
-                car_list.append(Vehicle(centre_x, centre_y, 0))
 
-            draw_contour(contour, frame, speed)
-
-        for car in car_list:
-            if not car.updated:
-                car.inactive_counter = car.inactive_counter + 1
-            else:
-                car.inactive_counter = 0
-
-        car_list = list(filter(lambda c: c.inactive_counter < 5, car_list))
+        car_list = list(filter(lambda c: c.remove is True, car_list))
 
         cv2.imshow('detected_motion', detected_motion)
         cv2.imshow('tp2', frame)
@@ -133,4 +128,5 @@ def tp2():
     cv2.destroyAllWindows()
 
 
-tp2()
+if __name__ == '__main__':
+    tp2()

@@ -5,17 +5,16 @@ import random
 
 class Vehicle:
 
-    def __init__(self, x, y, speed, initial_frame=True):
-        self.x = x
-        self.y = y
+    def __init__(self, contour, speed, initial_frame=True):
+        self.contour = contour,
         self.hist_x = 0
         self.hist_y = 0
-        self.updated = True
         self.inactive_counter = 0
         self.speed = speed
         self.img = np.array([])
         self.color = generate_random_color()
         self.initial_frame = initial_frame
+        self.remove = False
 
     # Distancia euclideana para comparar el centroide del vehiculo contra el de otro.
     def euclidean_distance(self, vehicle):
