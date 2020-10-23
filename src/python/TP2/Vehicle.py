@@ -1,17 +1,20 @@
 import numpy as np
 import math
 import random
+import cv2
 
 
 class Vehicle:
 
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y, speed, id):
+        self.id = id
         self.x = x
         self.y = y
         self.hist_x = 0
         self.hist_y = 0
         self.speed = speed
         self.img = np.array([])
+        # self.color = (255, 0, 0)
         self.color = generate_random_color()
         self.remove = False
 
@@ -46,5 +49,56 @@ def nearest_vehicle_in_range(vehicle, vehicles, max_distance):
         distance = vehicle.euclidean_distance(v)
         if distance < max_distance and distance < min_distance:
             nearest = v
+            min_distance = distance
 
     return nearest
+
+def calculate_distance(x1, y1, x2, y2):
+    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return distance
+
+def get_center(contour):
+    moments = cv2.moments(contour)
+    centre_x = moments["m10"] / moments["m00"]
+    centre_y = moments["m01"] / moments["m00"]
+    return centre_x, centre_y
+
+def nearest_contour_in_range(vehicle, contours, max_distance):
+    nearest = None
+    if not contours:
+        return nearest
+
+    (x1, y1) = get_center(contours[0])
+    min_distance = calculate_distance(x1, y1, vehicle.x, vehicle.y)
+    for c in contours:
+        (x1, y1) = get_center(c)
+        distance = calculate_distance(x1, y1, vehicle.x, vehicle.y)
+        if distance < max_distance and distance < min_distance:
+            nearest = c
+            min_distance = distance
+
+    return nearest
+
+def nearest_vehicle_to_contour_in_range(contour, vehicles, max_distance):
+    nearest = None
+    if not vehicles:
+        return nearest
+
+    (x1, y1) = get_center(contour)
+    vehicle = vehicles[0]
+    min_distance = calculate_distance(x1, y1, vehicle.x, vehicle.y)
+    for v in vehicles:
+        (x1, y1) = get_center(contour)
+        distance = calculate_distance(x1, y1, v.x, v.y)
+        if distance < max_distance and distance < min_distance:
+            nearest = v
+            min_distance = distance
+
+    index = vehicles.index(nearest) if nearest is not None else None
+    return nearest
+
+def find_by_id(id, cars):
+    for car in cars:
+        if car.id == id:
+            return car
+    return None
