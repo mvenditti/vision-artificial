@@ -5,15 +5,14 @@ import random
 
 class Vehicle:
 
-    def __init__(self, contour, speed, initial_frame=True):
+    def __init__(self, contour, speed):
+        print(type(contour))
         self.contour = contour,
-        self.hist_x = 0
-        self.hist_y = 0
-        self.inactive_counter = 0
+        print(type(self.contour))
+        self.hist_contour = None
         self.speed = speed
         self.img = np.array([])
         self.color = generate_random_color()
-        self.initial_frame = initial_frame
         self.remove = False
 
     # Distancia euclideana para comparar el centroide del vehiculo contra el de otro.
@@ -38,7 +37,7 @@ def generate_random_color():
 # En caso de que ningun vehiculo cumpla los requisitos, o que la lista de vehiculos este vacia, se devuelve None
 # todo no devolveria none porque falla
 def nearest_vehicle_in_range(vehicle, vehicles, max_distance):
-    nearest = vehicle
+    nearest = None
     if not vehicles:
         return nearest
 

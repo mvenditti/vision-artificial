@@ -15,15 +15,16 @@ frame_frequency = 10
 max_y_distance = 100
 
 
+def get_center(contour):
+    moments = cv2.moments(contour)
+    centre_x = moments["m10"] / moments["m00"]
+    centre_y = moments["m01"] / moments["m00"]
+    return centre_x, centre_y
+
+
 def frame_update(frame_counter):
     global frame_frequency
     return frame_counter % frame_frequency == 0
-
-
-def contour_to_img(img, contour):
-    (x, y, w, h) = cv2.boundingRect(contour)
-    crop_image = img[y:y + h, x:x + w]
-    return crop_image
 
 
 def calculate_distance(x1, y1, x2, y2):
@@ -31,21 +32,23 @@ def calculate_distance(x1, y1, x2, y2):
     return distance
 
 
-def calculate_speed(car, center_x, center_y):
+def calculate_speed(car):
     global frame_frequency
-    distance = calculate_distance(center_x, center_y, car.hist_x, car.hist_y)
+    x, y = get_center(car.contour)
+    hist_x, hist_y = get_center(car.hist_contour)
+    distance = calculate_distance(x, y, hist_x, hist_y)
     distance_meter = distance * meter_x_pixel
     meter_per_second = distance_meter / (seconds_x_frame * frame_frequency)
     return int(meter_per_second * 3.6)
 
 
-def draw_contour(contour, frame, speed, color):
+def draw_car(car, frame):
     # get bounding box from countour
-    (x, y, w, h) = cv2.boundingRect(contour)
+    (x, y, w, h) = cv2.boundingRect(car.contour)
     ROI = x, y, w, h
     # draw bounding box
-    cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-    cv2.putText(frame, str(speed) + " km/h", (x, y - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+    cv2.rectangle(frame, (x, y), (x + w, y + h), car.color, 2)
+    cv2.putText(frame, str(car.speed) + " km/h", (x, y - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
 
 
 def tp2():
@@ -78,7 +81,7 @@ def tp2():
         detected_motion = cv2.morphologyEx(detected_motion, cv2.MORPH_OPEN, kernel)  # Erosion followed by dilation
 
         # buscamos contornos de parte de arriba y abajo por separado
-        (contours, _) = cv2.findContours(detected_motion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(detected_motion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         def valid_countor(c):
             # boundingRect es para dibujar un rectangulo aprox al rededor de la img binaria
@@ -88,37 +91,26 @@ def tp2():
         filtered_contours = list(filter(valid_countor, contours))
 
         for contour in filtered_contours:
-            moments = cv2.moments(contour)
-            centre_x = moments["m10"] / moments["m00"]
-            centre_y = moments["m01"] / moments["m00"]
-
+            car_list.append(Vehicle(contour, 0))
             for car in car_list:
-                (x, y, w, h) = cv2.boundingRect(car.contour)
+                x, y = get_center(car.get_contour())
                 if y > max_y_distance:
                     car.remove = True
                 else:
-                    car_list.append(Vehicle(contour, 0))
-                    draw_contour(car.contour, frame, car.speed, car.color)
+                    nearest = nearest_vehicle_in_range(car, car_list, 30)
+                    if nearest is None:
+                        car.remove = True
+                    else:
+                        car.contour = nearest.contour
+                        draw_car(car.contour, frame)
 
-                car = nearest_vehicle_in_range(car, car_list, 30)
+                        if frame_update(frame_counter):
+                            if car.hist_contour is not None:
+                                car.speed = calculate_speed(car)
 
-                # con 2 quedaba tan seguido que ponia lento el video
-                if frame_update(frame_counter):
-                    if car.hist_x != 0 and car.hist_y != 0:
-                        speed = calculate_speed(car, centre_x, centre_y)
-                        car.speed = speed
-                        car_img = contour_to_img(clean_frame, contour)
-                        height, width, channels = car_img.shape
-                        if width > 55 and height < 70:
-                            car.img = car_img
-                    car.hist_x = centre_x
-                    car.hist_y = centre_y
-                else:
-                    speed = car.speed
-
+                            car.hist_contour = nearest.contour
 
         car_list = list(filter(lambda c: c.remove is True, car_list))
-
         cv2.imshow('detected_motion', detected_motion)
         cv2.imshow('tp2', frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
