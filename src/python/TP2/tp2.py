@@ -56,7 +56,7 @@ def tp2():
     frame_counter = 0
     car_list = []
 
-    video_path = 'traffic.mp4'
+    video_path = 'video.mp4'
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     background_subs = cv2.createBackgroundSubtractorMOG2(detectShadows=False, history=500, varThreshold=150)
 
