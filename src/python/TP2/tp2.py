@@ -48,6 +48,8 @@ def tp2():
 
     cap = cv2.VideoCapture(video_path)
 
+    max_speed = 0
+
     while (cap.isOpened):
         ret, frame = cap.read()
         clean_frame = frame.copy()
@@ -101,6 +103,8 @@ def tp2():
                     if check_speed:
                         if car.hist_x != 0 and car.hist_y != 0:
                             speed = calculate_speed(car, centre_x, centre_y)
+                            if speed > max_speed:
+                                max_speed = speed
                             car.speed = speed
                             car_img = contour_to_img(clean_frame, contour)
                             height, width, channels = car_img.shape
@@ -124,6 +128,7 @@ def tp2():
 
         car_list = list(filter(lambda c: c.inactive_counter < 5, car_list))
 
+        cv2.putText(frame, "Max Speed: {} km/h".format(max_speed), (20, 20), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
         cv2.imshow('detected_motion', detected_motion)
         cv2.imshow('tp2', frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
