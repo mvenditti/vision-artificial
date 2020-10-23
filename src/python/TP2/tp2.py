@@ -62,6 +62,8 @@ def tp2():
 
     cap = cv2.VideoCapture(video_path)
 
+    deleted = 0
+
     while (cap.isOpened):
         ret, frame = cap.read()
         clean_frame = frame.copy()
@@ -110,8 +112,11 @@ def tp2():
                             car.hist_x = nearest.x
                             car.hist_y = nearest.y
 
-        car_list = list(filter(lambda c: c.remove is True, car_list))
+        filtered = list(filter(lambda c: c.remove is True, car_list))
+        deleted += len(filtered)
+        car_list = filtered
         cv2.imshow('detected_motion', detected_motion)
+        cv2.putText(frame, "Autos procesados: " + str(deleted), (20, 550), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
         cv2.imshow('tp2', frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
