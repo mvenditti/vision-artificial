@@ -2,14 +2,16 @@ import cv2
 import math
 
 # cantidad de metros equivalentes a un pixel
-from src.python.TP2.Vehicle import Vehicle, nearest_vehicle_to_contour_in_range, find_by_id
+from src.python.TP2.Vehicle import Vehicle, nearest_vehicle_to_contour_in_range
 
-meter_x_pixel = 0.026
+# car dimensions in meter
+car_length_meter = 3
+
 # cantidad de segundos equivalentes a un frame
 seconds_x_frame = 0.4
 
 # cada cuantos frames realizo una accion.
-frame_frequency = 10
+frame_frequency = 3
 
 # distancia maxima a recorrer a partir de dicho punto se remueven autos.
 max_y_distance = 400
@@ -32,21 +34,35 @@ def calculate_distance(x1, y1, x2, y2):
     return distance
 
 
-def calculate_speed(car):
+def calculate_speed(car, contour):
     global frame_frequency
+    global car_length_meter
+    (x, y, w, h) = get_bounding_rect(contour)
+    dimension = None
+    if w > h:
+        dimension = w
+    else:
+        dimension = h
+    meter_x_pixel = car_length_meter/dimension
+
     distance = calculate_distance(car.x, car.y, car.hist_x, car.hist_y)
     distance_meter = distance * meter_x_pixel
+
     meter_per_second = distance_meter / (seconds_x_frame * frame_frequency)
     return int(meter_per_second * 3.6)
 
 
 def draw_contour(contour, frame, car):
     # get bounding box from countour
-    (x, y, w, h) = cv2.boundingRect(contour)
+    (x, y, w, h) = get_bounding_rect(contour)
     # draw bounding box
     cv2.rectangle(frame, (x, y), (x + w, y + h), car.color, 2)
     # cv2.putText(frame, str(car.speed) + " km/h", (x, y - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
 
+
+def get_bounding_rect(contour):
+    (x, y, w, h) = cv2.boundingRect(contour)
+    return x, y, w, h
 
 def tp2():
     global max_y_distance
@@ -90,50 +106,41 @@ def tp2():
 
         filtered_contours = list(filter(valid_countor, contours))
 
-        if len(car_list) == 0:
-            for contour in filtered_contours:
-                center_x, center_y = get_center(contour)
-                car_list.append(Vehicle(center_x, center_y, 0, id_counter))
-                id_counter += 1
-
         for contour in filtered_contours:
             center_x, center_y = get_center(contour)
-            # new_car = Vehicle(center_x, center_y, 0, id_counter)
-            # id_counter += 1
-
-            # draw_contour(contour, frame, new_car)
-            # if car.y < max_y_distance:
-            #   car.remove = True
-            # else:
-            nearest_car = nearest_vehicle_to_contour_in_range(contour, car_list, 50)
+            nearest_car, index = nearest_vehicle_to_contour_in_range(contour, car_list, 100)
+            car = None
             if nearest_car is None:
                 # agregar como un auto nuevo, en vez de remover los autos creados innecesariamente
-                new_car = Vehicle(center_x, center_y, 0, id_counter)
+                print("car list size: {}".format(len(car_list)))
+                car = Vehicle(center_x, center_y, 0, id_counter)
+                car_list.append(car)
                 id_counter += 1
-                car_list.append(new_car)
-
-                # draw_contour(contour, frame, new_car)
-
-                # ya no va mas aca
-                # car.remove = True
             else:
+                # if car.y < max_y_distance:
+                #   car.remove = True
+                # else:
+
                 # update existing car
-                car = find_by_id(nearest_car.id, car_list)
-                car.x = nearest_car.x
-                car.y = nearest_car.y
-                draw_contour(contour, frame, car)
-                cv2.putText(frame, str(car.id), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+                car = car_list[index]
+                car.x = center_x
+                car.y = center_y
 
                 if frame_update(frame_counter):
                     if car.hist_x != 0 and car.hist_y != 0:
-                        car.speed = calculate_speed(car)
+                        speed = calculate_speed(car, contour)
+                        car.speed = speed
 
                     car.hist_x = nearest_car.x
                     car.hist_y = nearest_car.y
+                car_list[index] = car
 
-        filtered = list(filter(lambda c: c.remove is True, car_list))
-        deleted += len(filtered)
-        car_list = filtered
+            draw_contour(contour, frame, car)
+            cv2.putText(frame, str(car.id), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+            # cv2.putText(frame, str(car.speed), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+        # filtered = list(filter(lambda c: c.remove is True, car_list))
+        # deleted += len(filtered)
+        # car_list = filtered
         cv2.imshow('detected_motion', detected_motion)
         cv2.putText(frame, "Autos procesados: " + str(deleted), (10, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
         cv2.imshow('tp2', frame)

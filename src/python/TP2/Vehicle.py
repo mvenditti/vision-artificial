@@ -53,15 +53,18 @@ def nearest_vehicle_in_range(vehicle, vehicles, max_distance):
 
     return nearest
 
+
 def calculate_distance(x1, y1, x2, y2):
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     return distance
+
 
 def get_center(contour):
     moments = cv2.moments(contour)
     centre_x = moments["m10"] / moments["m00"]
     centre_y = moments["m01"] / moments["m00"]
     return centre_x, centre_y
+
 
 def nearest_contour_in_range(vehicle, contours, max_distance):
     nearest = None
@@ -79,26 +82,24 @@ def nearest_contour_in_range(vehicle, contours, max_distance):
 
     return nearest
 
+
 def nearest_vehicle_to_contour_in_range(contour, vehicles, max_distance):
     nearest = None
+    index = 0
     if not vehicles:
-        return nearest
+        return nearest, index
 
     (x1, y1) = get_center(contour)
     vehicle = vehicles[0]
     min_distance = calculate_distance(x1, y1, vehicle.x, vehicle.y)
-    for v in vehicles:
-        (x1, y1) = get_center(contour)
+    for i, v in enumerate(vehicles):
         distance = calculate_distance(x1, y1, v.x, v.y)
-        if distance < max_distance and distance < min_distance:
+        if distance < min_distance:
             nearest = v
             min_distance = distance
+            index = i
 
-    index = vehicles.index(nearest) if nearest is not None else None
-    return nearest
-
-def find_by_id(id, cars):
-    for car in cars:
-        if car.id == id:
-            return car
-    return None
+    if min_distance < max_distance:
+        return nearest, index
+    else:
+        return None, 0
