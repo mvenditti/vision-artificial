@@ -14,8 +14,7 @@ class Vehicle:
         self.hist_y = 0
         self.speed = speed
         self.img = np.array([])
-        # self.color = (255, 0, 0)
-        self.color = generate_random_color()
+        self.color = (255, 0, 0)
         self.remove = False
 
     # Distancia euclideana para comparar el centroide del vehiculo contra el de otro.
