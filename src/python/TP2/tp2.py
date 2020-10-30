@@ -138,16 +138,15 @@ def tp2():
                         car.hist_y = nearest_car.y
                     car_list[index] = car
                     draw_contour(contour, frame, car)
-
-            cv2.putText(frame, str(car.id), (int(center_x), int(center_y)), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
-            # cv2.putText(frame, str(car.speed), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+                    cv2.putText(frame, str(car.id), (int(center_x), int(center_y)), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+                    # cv2.putText(frame, str(car.speed), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
 
         before_filter = len(car_list)
         filtered = list(filter(lambda c: c.remove is False, car_list))
         filtered_amount = before_filter - len(filtered)
         deleted += filtered_amount
         car_list = filtered
-        print(len(car_list))
+
         cv2.imshow('detected_motion', detected_motion)
         cv2.putText(frame, "Autos procesados: " + str(deleted), (10, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
         cv2.imshow('tp2', frame)
