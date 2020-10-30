@@ -112,7 +112,7 @@ def tp2():
             car = None
             if nearest_car is None:
                 # agregar como un auto nuevo, en vez de remover los autos creados innecesariamente
-                car = Vehicle(center_x, center_y, 0, id_counter)
+                car = Vehicle(center_x, center_y, None, id_counter)
                 car_list.append(car)
                 id_counter += 1
             else:
@@ -139,13 +139,14 @@ def tp2():
                     fastest_car = car_list[0]
                     fastest_speed = 0
                     for car in car_list:
-                        if car.speed > fastest_speed:
+                        if car.speed is not None and car.speed > fastest_speed:
                             fastest_car = car
                             fastest_speed = fastest_car.speed
 
                     fastest_car.color = (0, 255, 0)
                     draw_contour(contour, frame, car)
-                    cv2.putText(frame, str(car.speed), (int(center_x), int(center_y)), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+                    if car.speed is not None:
+                        cv2.putText(frame, str(car.speed), (int(center_x), int(center_y)), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
                     # cv2.putText(frame, str(car.speed), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
 
         before_filter = len(car_list)
