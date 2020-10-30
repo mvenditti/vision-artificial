@@ -59,6 +59,7 @@ def in_bound(y):
     global max_y_distance
     return y > max_y_distance
 
+
 def get_bounding_rect(contour):
     (x, y, w, h) = cv2.boundingRect(contour)
     return x, y, w, h
@@ -82,7 +83,6 @@ def tp2():
 
     while (cap.isOpened):
         ret, frame = cap.read()
-        clean_frame = frame.copy()
         cv2.line(frame, (0, max_y_distance), (10000, max_y_distance), (0, 0, 255), 3)
         frame_counter = frame_counter + 1
 
@@ -94,17 +94,17 @@ def tp2():
         detected_motion = cv2.morphologyEx(detected_motion, cv2.MORPH_CLOSE, kernel)  # Dilation followed by Erosion
 
         # sacar ruido del fondo
-        detected_motion = cv2.morphologyEx(detected_motion, cv2.MORPH_OPEN, kernel)  # Erosion followed by dilation
+        detected_motion = cv2.morphologyEx(detected_motion, cv2.MORPH_OPEN, kernel)  # Erosion preceded by dilation
 
         # buscamos contornos de parte de arriba y abajo por separado
         contours, _ = cv2.findContours(detected_motion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        def valid_countor(c):
+        def valid_contour(c):
             # boundingRect es para dibujar un rectangulo aprox al rededor de la img binaria
             (x, y, width, h) = cv2.boundingRect(c)
-            return cv2.contourArea(c) > 250 and width < 150 and in_bound(y+20)
+            return cv2.contourArea(c) > 250 and width < 150 and in_bound(y + 20)
 
-        filtered_contours = list(filter(valid_countor, contours))
+        filtered_contours = list(filter(valid_contour, contours))
 
         for contour in filtered_contours:
             center_x, center_y = get_center(contour)
@@ -144,10 +144,11 @@ def tp2():
                             fastest_speed = fastest_car.speed
 
                     fastest_car.color = (0, 255, 0)
+
                     draw_contour(contour, frame, car)
                     if car.speed is not None:
-                        cv2.putText(frame, str(car.speed), (int(center_x), int(center_y)), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
-                    # cv2.putText(frame, str(car.speed), (int(center_x), int(center_y) - 5), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+                        cv2.putText(frame, str(car.speed), (int(center_x), int(center_y)), cv2.FONT_HERSHEY_TRIPLEX,
+                                    0.75, (0, 0, 255), 1)
 
         before_filter = len(car_list)
         filtered = list(filter(lambda c: c.remove is False, car_list))
@@ -156,7 +157,7 @@ def tp2():
         car_list = filtered
 
         cv2.imshow('detected_motion', detected_motion)
-        cv2.putText(frame, "Autos procesados: " + str(deleted), (10, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255), 1)
+        cv2.putText(frame, "Autos procesados: " + str(deleted), (10, 50), cv2.FONT_HERSHEY_TRIPLEX, 0.75, (0, 0, 255),1)
         cv2.imshow('tp2', frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
@@ -167,5 +168,3 @@ def tp2():
 
 if __name__ == '__main__':
     tp2()
-
-# str(int(deleted * 0.2))
