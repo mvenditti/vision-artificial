@@ -10,16 +10,16 @@ def face_classifier():
 
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-    img = cv2.imread('./without_mask/1.png')
+    img = cv2.imread('./with_mask/1.png')
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
     for i, (x, y, w, h) in enumerate(faces):
-        roi = img[y:y+h, x:x+w]
+        roi = gray[y:y+h, x:x+w]
         resized = cv2.resize(roi, (180, 180))
         normalized = resized/255.
-        reshaped = np.reshape(normalized, (1, 180, 180, 3))
+        reshaped = np.reshape(normalized, (1, 180, 180, 1))
 
         predictions = model.predict(reshaped)
         score = tf.nn.softmax(predictions[0])
