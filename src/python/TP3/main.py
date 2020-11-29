@@ -46,5 +46,23 @@ def face_classifier():
     cv2.waitKey()
 
 
+def video_classifier():
+    model_path = "./saved_model/classifier"
+    model = tf.keras.models.load_model(model_path)
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        _, frame = cap.read()
+        flipped = cv2.flip(frame, 1)
+        detect_faces_and_classify(flipped, face_cascade, model)
+
+        cv2.imshow('MaskNet', flipped)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+
 if __name__ == '__main__':
-    face_classifier()
+    # face_classifier()
+    video_classifier()
