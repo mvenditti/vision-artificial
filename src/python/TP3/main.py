@@ -26,8 +26,8 @@ def detect_faces_and_classify(img, face_cascade, model):
             # Green color for mask
             color = (0, 255, 0)
 
-        cv2.putText(img, class_names[label], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 1, cv2.LINE_AA)
-        cv2.rectangle(img, (x, y), (x + w, y + h), color)
+        cv2.putText(img, class_names[label], (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2, cv2.LINE_AA)
+        cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
 
 
 def face_classifier():
