@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import cv2
+import time
 
 class_names = ['with_mask', 'without_mask']
 
@@ -46,7 +47,7 @@ def face_classifier():
     cv2.waitKey()
 
 
-def video_classifier():
+def video_capture_classifier():
     model_path = "./saved_model/classifier"
     model = tf.keras.models.load_model(model_path)
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -63,6 +64,33 @@ def video_classifier():
             break
 
 
+def video_classifier():
+    model_path = "./saved_model/classifier"
+    model = tf.keras.models.load_model(model_path)
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+    video_path = "diego.MOV"
+    cap = cv2.VideoCapture(video_path)
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+
+        if not ret:
+            print("Can't receive frame (stream end?). Exiting ...")
+            break
+
+        flipped = cv2.flip(frame, 1)
+        detect_faces_and_classify(flipped, face_cascade, model)
+
+        cv2.imshow('MaskNet', flipped)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     # face_classifier()
+    # video_capture_classifier()
     video_classifier()
