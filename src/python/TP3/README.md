@@ -1,5 +1,5 @@
 # Masknet
-Reconocimiento de caras que predice si tiene o no puesto el tapabocas.
+Reconocimiento de caras que clasifica si tiene o no puesto el tapabocas.
 
 ## Alumnos
 * Baldassare Diego
@@ -22,5 +22,8 @@ pip install -r requirements.txt
 ```
 4. Ejecutar la aplicación
 
+## Ejemplo
+![demo-example](https://github.com/mvenditti/vision-artificial/blob/master/src/python/TP3/demo-example.png)
+
 ## Dataset
-Se entrenó el modelo en [Google Colaboratory](https://colab.research.google.com/drive/11BbY4duQdYoycNkio2QIiKq7HRwHA2yU?usp=sharing) y se guardó una copia del dataset en [Google Drive](https://drive.google.com/drive/folders/1S3mPLYEh18cXCpJuFpkp-VBYTtOmIlOJ?usp=sharing).
+Se guardó una copia del dataset en [Google Drive](https://drive.google.com/drive/folders/1S3mPLYEh18cXCpJuFpkp-VBYTtOmIlOJ?usp=sharing) y se entrenó el modelo en [Google Colaboratory](https://colab.research.google.com/drive/11BbY4duQdYoycNkio2QIiKq7HRwHA2yU?usp=sharing).
