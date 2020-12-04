@@ -3,7 +3,7 @@ import tensorflow as tf
 import cv2
 import time
 
-class_names = ['with_mask', 'without_mask']
+class_names = ['With mask', 'Without mask']
 
 
 def detect_faces_and_classify(img, face_cascade, model):
@@ -69,7 +69,8 @@ def video_classifier():
     model = tf.keras.models.load_model(model_path)
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-    video_path = "diego.MOV"
+    video_path = "diego2rapido.mp4"
+    # video_path = "florblancorapido.mp4"
     cap = cv2.VideoCapture(video_path)
 
     while cap.isOpened():
@@ -82,7 +83,9 @@ def video_classifier():
         flipped = cv2.flip(frame, 1)
         detect_faces_and_classify(flipped, face_cascade, model)
 
+        cv2.namedWindow('MaskNet', cv2.WINDOW_NORMAL)
         cv2.imshow('MaskNet', flipped)
+        cv2.resizeWindow('MaskNet', 1000, 750)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
